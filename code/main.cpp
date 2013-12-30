@@ -88,16 +88,27 @@ int mainQ() {
 	cout << "index " << index << endl;
 	*/
 	double t1, t2;
-	t1 = 150000013.9;
-	t2 = t1 - 0.01 + 86400*30;
+	t1 = 158868000;
+	t2 = 159472800;
+	double tstep = 10;
+	double t3 = t1;
+	double t4 = t1;
+	for(int i=0; i<200000; i++) {
+		t3 = t4;
+		t4 = t3 + tstep;
+		f.reset();
+		bool ret = f.query(t3, t4, 18);
+		cout << "size " << f.time.size() << " capacity " << f.time.capacity() << endl;
+	}
+	/*
 	cout << "size " << f.time.size() << " capacity " << f.time.capacity() << endl;
-	long size = f.query(t1, t2, 18);
-	cout << size << endl;
+	bool ret = f.query(t1, t2, 18);
+	cout << ret << endl;
 	//f.readTimeInterval(index, t1, t2);
 	//cout << t1 << " " << t2 << endl;
 	cout << "size " << f.time.size() << " capacity " << f.time.capacity() << endl;
 	//for(int i=0 ; i< f.time.size(); i++) cout << f.time[i] << endl;
-	
+	*/
 	/// stop the clock
     clock_gettime( CLOCK_MONOTONIC, &stopg);
     double time = timediff(startg, stopg);
