@@ -28,6 +28,7 @@
 #include "EVTPacket.h"
 #include "LOGPacket.h"
 #include "LOGFilter.h"
+#include "EVTFilter.h"
 #include <locale>
 #include <sstream>
 #include "mac_clock_gettime.h"
@@ -73,8 +74,58 @@ bool myisnan(double var) {
         return d != d;
 }
 
+int mainEVT() {
+	/// start clock
+    clock_gettime( CLOCK_MONOTONIC, &startg);
+        
+	//EVTFilter f("agileevt.phearthL70.thetaG70.poin.raw");
+	EVTFilter f("/Users/bulgarelli/devel.agile/data_agiletelem/agilelog.10.poin.raw");
+	uint32_t index;
+	bool ret = f.binary_search(150000013.9, index, true);
+	if(ret == false) {
+		cout << "index not found" << endl;
+		return -1;
+	}
+	cout << "index " << index << endl;
+	
+	double t1, t2;
+	t1 = 158868000;
+	t2 = t1 + 86400*7;
+	//t2 = 159472800;
+	ret = f.query(t1, t2, 18, 5, 100, 200, 80, 0, 60);
+	cout << "size " << f.time.size() << " capacity " << f.time.capacity() << endl;
+	for(int i=0; i<f.time.size(); i++) {
+		cout << setprecision(12) << f.time[i] << "\t" << setw(10) << setprecision(5) << f.ra[i] << "\t" << setw(10) << f.dec[i] << "\t" << f.energy[i] << "\t" << (int) f.evstatus[i] << "\t" << (int)f.ph_earth[i] << "\t" << (int) f.theta[i] << endl;
+	}
+	/*	
+	double t3 = t1;
+	double t4 = t1;
+	for(int i=0; i<100; i++) {
+		t3 = t4;
+		t4 = t3 + tstep;
+		f.reset();
+		bool ret = f.query(t3, t4, 18);
+		cout << "size " << f.time.size() << " capacity " << f.time.capacity() << endl;
+	}
+	/*
+	cout << "size " << f.time.size() << " capacity " << f.time.capacity() << endl;
+	bool ret = f.query(t1, t2, 18);
+	cout << ret << endl;
+	//f.readTimeInterval(index, t1, t2);
+	//cout << t1 << " " << t2 << endl;
+	cout << "size " << f.time.size() << " capacity " << f.time.capacity() << endl;
+	//for(int i=0 ; i< f.time.size(); i++) cout << f.time[i] << endl;
+	*/
+	/// stop the clock
+    clock_gettime( CLOCK_MONOTONIC, &stopg);
+    double time = timediff(startg, stopg);
+    std::cout << "Total time: " << time << std::endl << std::endl;
+	
+	return 0;
+}
 
-int mainQ() {
+
+int mainLOG() {
 	/// start clock
     clock_gettime( CLOCK_MONOTONIC, &startg);
         
@@ -216,6 +267,14 @@ int mainW(string filename, int nrows_end) {
 		return 0;
 	}
 	*/
+	
+	const char* home = getenv("AGILE");
+    if (!home)
+    {
+    	std::cerr << "AGILE environment variable is not defined." << std::endl;
+        exit(0);
+    }
+    string basedir = home;
 
 	
 	InputFileFITS* inputFF;
@@ -244,7 +303,7 @@ int mainW(string filename, int nrows_end) {
 			try
     		{
 				/// The Packet containing the FADC value of each triggered telescope
-        		AGILETelem::EVTPacket* evt = new AGILETelem::EVTPacket("./conf/agile.stream", "", "agileevt.raw");
+        		AGILETelem::EVTPacket* evt = new AGILETelem::EVTPacket(basedir + "/share/agiletelem/agile.stream", "", "agileevt.raw");
         	
         			
 			
@@ -323,7 +382,8 @@ int mainW(string filename, int nrows_end) {
 				
 				ostringstream outfilename;
 				outfilename << "agilelog." << timeStep << ".spin.raw";
-        		AGILETelem::LOGPacket* log = new AGILETelem::LOGPacket("./conf/agile.stream", "", outfilename.str());
+				
+        		AGILETelem::LOGPacket* log = new AGILETelem::LOGPacket(basedir + "/share/agiletelem/agile.stream", "", outfilename.str());
 
 				//read all columns
 				cout << "Read LOG file " << nrows_end << endl;
@@ -412,5 +472,7 @@ int main(int argc, char** argv) {
 	if(op == 1)
 		mainR();
 	if(op == 2)
-		mainQ();
+		mainLOG();
+	if(op == 3)
+		mainEVT();
 }
