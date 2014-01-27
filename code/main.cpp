@@ -27,6 +27,7 @@
 #include "InputFileFITS.h"
 #include "EVTPacket.h"
 #include "LOGPacket.h"
+#include "RATPacket.h"
 #include "LOGFilter.h"
 #include "EVTFilter.h"
 #include <locale>
@@ -36,6 +37,7 @@
 //file types
 #define EVT 1
 #define LOG 2
+#define RAT 3
 
 //columns of EVT file
 #define EVT_TIME 0
@@ -63,6 +65,29 @@
 #define LOG_Q3 11
 #define LOG_Q4 12
 
+//column of RATEMETERS file
+#define RAT_TIME 19
+#define RAT_M6271_0_AC_TOP1_RATEM 289
+#define RAT_M6272_0_AC_TOP2_RATEM 290
+#define RAT_M6273_0_AC_TOP3_RATEM 291
+#define RAT_M6274_0_AC_LAT1_1_RATEM 292
+#define RAT_M6275_0_AC_LAT1_2_RATEM 293
+#define RAT_M6276_0_AC_LAT1_3_RATEM 294
+#define RAT_M6277_0_AC_LAT2_1_RATEM 295
+#define RAT_M6278_0_AC_LAT2_2_RATEM 296
+#define RAT_M6279_0_AC_LAT2_3_RATEM 297
+#define RAT_M6280_0_AC_LAT3_1_RATEM 298
+#define RAT_M6281_0_AC_LAT3_2_RATEM 299
+#define RAT_M6282_0_AC_LAT3_3_RATEM 300
+#define RAT_M6283_0_AC_LAT4_1_RATEM 301
+#define RAT_M6284_0_AC_LAT4_2_RATEM 302
+#define RAT_M6285_0_AC_LAT4_3_RATEM 303
+#define RAT_M6305_0_PDHU_ratemeter_of_T1_YES_signal 341
+#define RAT_M6320_0_PDHU_GRID_events_sent_to_ground 356
+#define RAT_M6573_0_MCAL_Fixed_Rt_BoardX 728
+#define RAT_M6575_0_MCAL_Fixed_Rt_BoardZ 730
+
+
 using namespace std;
 using namespace qlbase;
 
@@ -74,6 +99,46 @@ bool myisnan(double var) {
         return d != d;
 }
 
+int mainRAT() {
+	const char* home = getenv("AGILE");
+    if (!home)
+    {
+    	std::cerr << "AGILE environment variable is not defined." << std::endl;
+        exit(0);
+    }
+    string basedir = home;
+    
+			/// The Packet containing the FADC value of each triggered telescope
+			AGILETelem::RATPacket* rat = new AGILETelem::RATPacket(basedir + "/share/agiletelem/agile.stream", "/Users/bulgarelli/devel.agile/data_agiletelem/agilerat.raw", "");
+			///Read a telemetry packet from .raw file. Return 0 if end of file
+			ByteStreamPtr bs = rat->readPacket();
+			double lasttime = 0;
+			uint32_t counter = 0;
+			
+			while(bs != 0) { //if not end of file
+				counter++;
+				
+			
+				double time = rat->getTime();
+				if(lasttime < time)
+					lasttime = time;
+				else {
+					//cout << "error in time " << setprecision(15) << lasttime << " " << time << endl; 
+					bs = rat->readPacket();
+					continue;
+				}
+				//uint16_t val = rat->getM6283_0_AC_LAT4_1_RATEM();
+				uint16_t val = rat->getM6320_0_PDHU_GRID_events_sent_to_ground();
+				
+				cout << setprecision(15) << time << "\t" << val << endl;
+
+				bs = rat->readPacket();
+			
+			
+			}
+			//cout << counter << endl;
+}
+
 int mainEVT() {
 	/// start clock
     clock_gettime( CLOCK_MONOTONIC, &startg);
@@ -81,13 +146,7 @@ int mainEVT() {
 	//EVTFilter f("agileevt.phearthL70.thetaG70.poin.raw");
 	EVTFilter f("/Users/bulgarelli/devel.agile/data_agiletelem/agilelog.10.poin.raw");
 	uint32_t index;
-	bool ret = f.binary_search(150000013.9, index, true);
-	if(ret == false) {
-		cout << "index not found" << endl;
-		return -1;
-	}
-	cout << "index " << index << endl;
-	
+	bool ret;
 	double t1, t2;
 	t1 = 158868000;
 	t2 = t1 + 86400*7;
@@ -181,10 +240,10 @@ int mainR() {
 			/// The Packet containing the FADC value of each triggered telescope
 			AGILETelem::EVTPacket* evt = new AGILETelem::EVTPacket("./conf/agile.stream", "agileevt.raw", "");
 			///Read a telemetry packet from .raw file. Return 0 if end of file
-			byte* b_evt = evt->readPacket();
+			ByteStreamPtr bs = evt->readPacket();
 		
 			uint32_t counter = 0;
-			while(b_evt != 0) { //if not end of file
+			while(bs != 0) { //if not end of file
 				counter++;
 				//print the overall content of the packet
 				//evt->printPacket_input();
@@ -195,7 +254,7 @@ int mainR() {
 			
 				cout << "---------------------------------" << endl;
 				cout << "---- " << counter <<endl;
-				cout << "D: " << evt->getInputPacketDimension(b_evt) << endl;
+				cout << "D: " << evt->getInputPacketDimension(bs) << endl;
 			
 				cout << "TIME: " << setprecision(20) << evt->getTime() << endl;
 				/*
@@ -205,7 +264,7 @@ int mainR() {
 				cout << "---- " << counter <<endl;
 				*/
 				///Read a telemetry packet from .raw file
-				b_evt = evt->readPacket();
+				bs = evt->readPacket();
 			
 			
 			}
@@ -215,17 +274,17 @@ int mainR() {
 			/// The Packet containing the FADC value of each triggered telescope
 			AGILETelem::LOGPacket* log = new AGILETelem::LOGPacket("./conf/agile.stream", "agilelog.160.raw", "");
 			///Read a telemetry packet from .raw file. Return 0 if end of file
-			byte* b_evt = log->readPacket();
+			ByteStreamPtr bs = log->readPacket();
 		
 			uint32_t counter = 0;
-			while(b_evt != 0) { //if not end of file
+			while(bs != 0) { //if not end of file
 				counter++;
 				//print the overall content of the packet
 				//evt->printPacket_input();
 
 				cout << "---------------------------------" << endl;
 				cout << "---- " << counter <<endl;
-				cout << "D: " << log->getInputPacketDimension(b_evt) << endl;
+				cout << "D: " << log->getInputPacketDimension(bs) << endl;
 			
 				cout << "TIME: " << setprecision(20) << log->getTime() << endl;
 				cout << "PHASE: " <<  (int)log->getPhase() << endl;
@@ -237,7 +296,7 @@ int mainR() {
 				cout << "---- " << counter <<endl;
 				
 				///Read a telemetry packet from .raw file
-				b_evt = log->readPacket();
+				bs = log->readPacket();
 			
 			
 			}
@@ -256,7 +315,7 @@ int mainR() {
 	
 }
 
-///Import AGILE LOG and EVT files into Ice/Freeze/BDB
+///Import AGILE RAT LOG and EVT files into Ice/Freeze/BDB
 ///mainW
 int mainW(string filename, int nrows_end) {
 
@@ -297,7 +356,8 @@ int mainW(string filename, int nrows_end) {
 
 		if(ncols == 19) type = EVT;
 		if(ncols == 41) type = LOG;
-
+		if(ncols == 897) type = RAT;
+		
 
 		if(type == EVT) {
 			try
@@ -447,10 +507,92 @@ int mainW(string filename, int nrows_end) {
 			{
 				cout << e->geterror() << endl;
 			}
-
-			
-			
 		}
+		if(type == RAT) {
+			try
+    		{
+				
+				ostringstream outfilename;
+				outfilename << "agilerat.raw";
+        		AGILETelem::RATPacket* rat = new AGILETelem::RATPacket(basedir + "/share/agiletelem/agile.stream", "", outfilename.str());
+
+				//read all columns
+				cout << "Read RAT file " << nrows_end << endl;
+				std::vector<double> time = inputFF->read64f(RAT_TIME, nrows_start, nrows_end-1);
+				
+				std::vector<uint16_t> M6271_0_AC_TOP1_RATEM = inputFF->read16u(RAT_M6271_0_AC_TOP1_RATEM, nrows_start, nrows_end-1);
+				
+				std::vector<uint16_t> M6272_0_AC_TOP2_RATEM= inputFF->read16u(RAT_M6272_0_AC_TOP2_RATEM, nrows_start, nrows_end-1);
+				std::vector<uint16_t> M6273_0_AC_TOP3_RATEM= inputFF->read16u(RAT_M6273_0_AC_TOP3_RATEM, nrows_start, nrows_end-1);
+				std::vector<uint16_t> M6274_0_AC_LAT1_1_RATEM= inputFF->read16u(RAT_M6274_0_AC_LAT1_1_RATEM, nrows_start, nrows_end-1);
+				std::vector<uint16_t> M6275_0_AC_LAT1_2_RATEM= inputFF->read16u(RAT_M6275_0_AC_LAT1_2_RATEM, nrows_start, nrows_end-1);
+				std::vector<uint16_t> M6276_0_AC_LAT1_3_RATEM= inputFF->read16u(RAT_M6276_0_AC_LAT1_3_RATEM, nrows_start, nrows_end-1);
+				std::vector<uint16_t> M6277_0_AC_LAT2_1_RATEM= inputFF->read16u(RAT_M6277_0_AC_LAT2_1_RATEM, nrows_start, nrows_end-1);
+				std::vector<uint16_t> M6278_0_AC_LAT2_2_RATEM= inputFF->read16u(RAT_M6278_0_AC_LAT2_2_RATEM, nrows_start, nrows_end-1);
+				std::vector<uint16_t> M6279_0_AC_LAT2_3_RATEM= inputFF->read16u(RAT_M6279_0_AC_LAT2_3_RATEM, nrows_start, nrows_end-1);
+				std::vector<uint16_t> M6280_0_AC_LAT3_1_RATEM= inputFF->read16u(RAT_M6280_0_AC_LAT3_1_RATEM, nrows_start, nrows_end-1);
+				std::vector<uint16_t> M6281_0_AC_LAT3_2_RATEM= inputFF->read16u(RAT_M6281_0_AC_LAT3_2_RATEM, nrows_start, nrows_end-1);
+				std::vector<uint16_t> M6282_0_AC_LAT3_3_RATEM= inputFF->read16u(RAT_M6282_0_AC_LAT3_3_RATEM, nrows_start, nrows_end-1);
+				std::vector<uint16_t> M6283_0_AC_LAT4_1_RATEM= inputFF->read16u(RAT_M6283_0_AC_LAT4_1_RATEM, nrows_start, nrows_end-1);
+				std::vector<uint16_t> M6284_0_AC_LAT4_2_RATEM= inputFF->read16u(RAT_M6284_0_AC_LAT4_2_RATEM, nrows_start, nrows_end-1);
+				std::vector<uint16_t> M6285_0_AC_LAT4_3_RATEM= inputFF->read16u(RAT_M6285_0_AC_LAT4_3_RATEM, nrows_start, nrows_end-1);
+				std::vector<uint16_t> M6305_0_PDHU_ratemeter_of_T1_YES_signal= inputFF->read16u(RAT_M6305_0_PDHU_ratemeter_of_T1_YES_signal, nrows_start, nrows_end-1);
+				std::vector<uint16_t> M6320_0_PDHU_GRID_events_sent_to_ground= inputFF->read16u(RAT_M6320_0_PDHU_GRID_events_sent_to_ground, nrows_start, nrows_end-1);
+				std::vector<uint16_t> M6573_0_MCAL_Fixed_Rt_BoardX= inputFF->read16u(RAT_M6573_0_MCAL_Fixed_Rt_BoardX, nrows_start, nrows_end-1);
+				std::vector<uint16_t> M6575_0_MCAL_Fixed_Rt_BoardZ= inputFF->read16u(RAT_M6575_0_MCAL_Fixed_Rt_BoardZ, nrows_start, nrows_end-1);
+				
+				uint32_t saved = 0;
+				//write data into file
+				for(uint32_t i  = 0; i<nrows_end; i++) {
+					
+					bool save = true;
+					
+					//setting if good
+					if(save) {
+						rat->setTime(time[i]);
+						rat->setM6271_0_AC_TOP1_RATEM((uint16_t) M6271_0_AC_TOP1_RATEM[i]);
+						
+						rat->setM6272_0_AC_TOP2_RATEM((uint16_t) M6272_0_AC_TOP2_RATEM[i]);
+						rat->setM6273_0_AC_TOP3_RATEM((uint16_t) M6273_0_AC_TOP3_RATEM[i]);
+						rat->setM6274_0_AC_LAT1_1_RATEM((uint16_t) M6274_0_AC_LAT1_1_RATEM[i]);
+						rat->setM6275_0_AC_LAT1_2_RATEM((uint16_t) M6275_0_AC_LAT1_2_RATEM[i]);
+						rat->setM6276_0_AC_LAT1_3_RATEM((uint16_t) M6276_0_AC_LAT1_3_RATEM[i]);
+						rat->setM6277_0_AC_LAT2_1_RATEM((uint16_t) M6277_0_AC_LAT2_1_RATEM[i]);
+						rat->setM6278_0_AC_LAT2_2_RATEM((uint16_t) M6278_0_AC_LAT2_2_RATEM[i]);
+						rat->setM6279_0_AC_LAT2_3_RATEM((uint16_t) M6279_0_AC_LAT2_3_RATEM[i]);
+						rat->setM6280_0_AC_LAT3_1_RATEM((uint16_t) M6280_0_AC_LAT3_1_RATEM[i]);
+						rat->setM6281_0_AC_LAT3_2_RATEM((uint16_t) M6281_0_AC_LAT3_2_RATEM[i]);
+						rat->setM6282_0_AC_LAT3_3_RATEM((uint16_t) M6282_0_AC_LAT3_3_RATEM[i]);
+						rat->setM6283_0_AC_LAT4_1_RATEM((uint16_t) M6283_0_AC_LAT4_1_RATEM[i]);
+						rat->setM6284_0_AC_LAT4_2_RATEM((uint16_t) M6284_0_AC_LAT4_2_RATEM[i]);
+						rat->setM6285_0_AC_LAT4_3_RATEM((uint16_t) M6285_0_AC_LAT4_3_RATEM[i]);
+						rat->setM6305_0_PDHU_ratemeter_of_T1_YES_signal((uint16_t) M6305_0_PDHU_ratemeter_of_T1_YES_signal[i]);
+						rat->setM6320_0_PDHU_GRID_events_sent_to_ground((uint16_t) M6320_0_PDHU_GRID_events_sent_to_ground[i]);
+						rat->setM6573_0_MCAL_Fixed_Rt_BoardX((uint16_t) M6573_0_MCAL_Fixed_Rt_BoardX[i]);
+						rat->setM6575_0_MCAL_Fixed_Rt_BoardZ((uint16_t) M6575_0_MCAL_Fixed_Rt_BoardZ[i]);
+						
+						rat->writePacket();
+						saved++;
+					
+						//cout << "------------------- " << i << " " << setprecision(15) << time[i] << " " << (uint16_t) M6271_0_AC_TOP1_RATEM[i]<< " " << M6320_0_PDHU_GRID_events_sent_to_ground[i] << " " << M6283_0_AC_LAT4_1_RATEM[i] << endl;
+						
+						//log->printPacket_output();
+					}
+				}
+				cout << "RAT saved " << saved << endl;
+
+			}
+			catch(PacketExceptionIO* e)
+			{
+				cout << e->geterror() << endl;;
+			}
+			catch(PacketException* e)
+			{
+				cout << e->geterror() << endl;
+			}
+		}
+			
+		
 	} catch(IOException* e) {
 		cout << e->getErrorCode() << ": " << e->what() << endl;
 		return e->getErrorCode();
@@ -475,4 +617,7 @@ int main(int argc, char** argv) {
 		mainLOG();
 	if(op == 3)
 		mainEVT();
+	///read ratemeters and generate a text file (stdout) with time and a column with the ratemeter
+	if(op == 4)
+		mainRAT();
 }
