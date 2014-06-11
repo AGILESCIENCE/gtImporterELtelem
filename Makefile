@@ -110,7 +110,8 @@ ifneq (, $(findstring wcs, $(LINKERENV)))
 endif 
 ifneq (, $(findstring agile, $(LINKERENV)))
         INCPATH += -I$(AGILE)/include
-	LIBS += -L$(AGILE)/lib -lpacket -lagiletelem -lagilecommon -lagilesci
+	LIBS += -L$(AGILE)/lib -lQLBase -lpacket -lagiletelem -lagilesci
+#-lagilecommon 
 endif
 
 #Set addition parameters that depends by operating system

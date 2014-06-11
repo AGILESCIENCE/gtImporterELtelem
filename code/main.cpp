@@ -24,7 +24,7 @@
 #include <iostream>
 #include <iomanip>
 #include <string>
-#include "InputFileFITS.h"
+#include "qlbase/InputFileFITS.h"
 #include "EVTPacket.h"
 #include "LOGPacket.h"
 #include "RATPacket.h"
@@ -32,7 +32,7 @@
 #include "EVTFilter.h"
 #include <locale>
 #include <sstream>
-#include "mac_clock_gettime.h"
+#include "qlbase/mac_clock_gettime.h"
 
 //file types
 #define EVT 1
@@ -40,7 +40,8 @@
 #define RAT 3
 
 //columns of EVT file
-#define EVT_TIME 0
+//0 for TIME, 18 for TIMEBAR
+#define EVT_TIME 18
 #define EVT_PHI 2
 #define EVT_RA 3
 #define EVT_DEC 4
@@ -100,6 +101,8 @@ bool myisnan(double var) {
         double d = var;
         return d != d;
 }
+
+
 
 int mainRAT() {
 	const char* home = getenv("AGILE");
@@ -188,18 +191,37 @@ int mainEVT() {
 
 
 int mainLOG() {
-	/*
+	cout << "mainLOG" << endl;
+	const char* home = getenv("AGILE");
+    if (!home)
+    {
+    	std::cerr << "AGILE environment variable is not defined." << std::endl;
+        exit(0);
+    }
+    string basedir = home;
+	
 	/// start clock
-    clock_gettime( CLOCK_MONOTONIC, &startg);
+    //clock_gettime( CLOCK_MONOTONIC, &startg);
         
-	LOGFilter f("agilelog.10.poin.raw", 10);
-	//uint32_t index;
-	//bool ret = f.binary_search(150000013.9, index, true);
+	LOGFilter f("/Users/bulgarelli/devel.agile/data_agiletelem/agilelog.10.spink.raw", 10);
+	uint32_t index;
+	//190599896.181275 190600896.181275
+	
+	bool ret = f.binary_search(257479896.181275, index, true);
+	cout << "index " << index << endl;
+	index = 74223319;
+	double start, end;
+	f.readTimeInterval(index, start, end);
+	cout << setprecision(15) << start << " " << end << endl;
+	uint32_t mid = f.midpoint(index, 74223334);
+	cout << "mid " << mid << endl;
+	return 0;
 	//if(ret == false) {
 	//	cout << "index not found" << endl;
 	//	return -1;
 	//}
 	//cout << "index " << index << endl;
+	/*
 	double t1, t2;
 	t1 = 158868000;
 	t2 = 159472800;
@@ -229,16 +251,10 @@ int mainLOG() {
 	
 	return 0;
 	 */
-	const char* home = getenv("AGILE");
-    if (!home)
-    {
-    	std::cerr << "AGILE environment variable is not defined." << std::endl;
-        exit(0);
-    }
-    string basedir = home;
+	
     
 	/// The Packet containing the FADC value of each triggered telescope
-	AGILETelem::LOGPacket* rat = new AGILETelem::LOGPacket(basedir + "/share/agiletelem/agile.stream", "/Users/bulgarelli/devel.agile/gtImporterELtelem/agilelog.160.poi.raw", "");
+	AGILETelem::LOGPacket* rat = new AGILETelem::LOGPacket(basedir + "/share/agiletelem/agile.stream", "/Users/bulgarelli/devel.agile/data_agiletelem/agilelog.10.spink.raw", "");
 	///Read a telemetry packet from .raw file. Return 0 if end of file
 	ByteStreamPtr bs = rat->readPacket();
 	double lasttime = 0;
@@ -261,12 +277,12 @@ int mainLOG() {
 		//uint16_t val = rat->getM6320_0_PDHU_GRID_events_sent_to_ground();
 		//uint16_t val = rat->getM6271_0_AC_TOP2_RATEM();
 		
-		double val = rat->getEarthTheta();
+		//double val = rat->getEarthTheta();
 		
 		
-		cout << setprecision(15) << time << "\t" << val << endl;
+		cout << counter << " " << setprecision(15) << time << endl;
 		
-		lastval = val;
+		//lastval = val;
 		
 		bs = rat->readPacket();
 		
@@ -289,10 +305,11 @@ int mainR() {
 		string basedir = home;
 		
 		int type;
-		type = LOG;
+		type = EVT;
+		
 		if(type == EVT) {
 			/// The Packet containing the FADC value of each triggered telescope
-			AGILETelem::EVTPacket* evt = new AGILETelem::EVTPacket(basedir + "/share/agiletelem/agile.stream", "agileevt.raw", "");
+			AGILETelem::EVTPacket* evt = new AGILETelem::EVTPacket(basedir + "/share/agiletelem/agile.stream", "agileevt.baric.igrj17354-3255.poine.raw", "");
 			///Read a telemetry packet from .raw file. Return 0 if end of file
 			ByteStreamPtr bs = evt->readPacket();
 		
@@ -326,16 +343,18 @@ int mainR() {
 		}
 		if(type == LOG) {
 			/// The Packet containing the FADC value of each triggered telescope
-			AGILETelem::LOGPacket* log = new AGILETelem::LOGPacket(basedir + "/share/agiletelem/agile.stream", "agilelog.10.poi.raw", "");
+			AGILETelem::LOGPacket* log = new AGILETelem::LOGPacket(basedir + "/share/agiletelem/agile.stream", "agilelog.10.spink.raw", "");
 			///Read a telemetry packet from .raw file. Return 0 if end of file
 			ByteStreamPtr bs = log->readPacket();
 		
 			uint32_t counter = 0;
+			double lasttime = 0;
 			while(bs != 0) { //if not end of file
 				counter++;
 				//print the overall content of the packet
 				//evt->printPacket_input();
 
+				/*
 				cout << "---------------------------------" << endl;
 				cout << "---- " << counter <<endl;
 				cout << "D: " << log->getInputPacketDimension(bs) << endl;
@@ -350,7 +369,18 @@ int mainR() {
 				cout << "EARTH_THETA: " << setprecision(7) << log->getEarthTheta() << endl;
 				cout << "EARTH_PHI: " << setprecision(7) << log->getEarthPhi() << endl;
 				cout << "---- " << counter <<endl;
+				*/
+				double time = log->getTime();
 				
+				if(time > 267489283) {
+					cerr << "out of time " << setprecision(20)  << time << endl;
+					continue;
+				}
+				if(lasttime>=time) {
+					cerr << "time out of order" << setprecision(20)  << time << endl;
+					continue;
+				}
+				lasttime = time;
 				///Read a telemetry packet from .raw file
 				bs = log->readPacket();
 			
@@ -419,7 +449,7 @@ int mainW(string filename, int nrows_end) {
 			try
     		{
 				/// The Packet containing the FADC value of each triggered telescope
-        		AGILETelem::EVTPacket* evt = new AGILETelem::EVTPacket(basedir + "/share/agiletelem/agile.stream", "", "agileevt.raw");
+        		AGILETelem::EVTPacket* evt = new AGILETelem::EVTPacket(basedir + "/share/agiletelem/agile.stream", "", "agileevt.xxxx.raw");
         	
         			
 			
@@ -463,7 +493,9 @@ int mainW(string filename, int nrows_end) {
                     	cout << " theta["<<i<<"] > 70" << endl;
                     	continue;
                     }
-                    
+					if(time[i] == 0)
+						continue;
+                    cout << setprecision(15) << time[i] << endl;
 					evt->setTime(time[i]);
 					evt->setRA(ra[i]);
 					evt->setDEC(dec[i]);
@@ -497,7 +529,7 @@ int mainW(string filename, int nrows_end) {
 				uint32_t timeStep = 10;
 				
 				ostringstream outfilename;
-				outfilename << "agilelog." << timeStep << ".poin.raw";
+				outfilename << "agilelog." << timeStep << ".xxxx.raw";
 				
         		AGILETelem::LOGPacket* log = new AGILETelem::LOGPacket(basedir + "/share/agiletelem/agile.stream", "", outfilename.str());
 
@@ -535,7 +567,14 @@ int mainW(string filename, int nrows_end) {
                     	cout << i << " nan" << endl;
                         continue;
                     }
-					
+					if(time[i] > 267489283) {
+						cerr << "out of time " << time[i] << endl;
+						continue;
+					}
+					if(time[i-1]>=time[i]) {
+						cerr << "time out of order" << endl;
+						continue;
+					}
 					//setting if good
 					if(save) {
 						log->setPhase(phase[i]);
