@@ -74,7 +74,7 @@ endif
 INCPATH = -I $(INCLUDE_DIR) 
 LIBS = -lstdc++ 
 #Insert the optional parameter to the compiler. The CFLAGS could be changed externally by the user
-CFLAGS   = -g
+CFLAGS   = -g -std=c++11
 #Insert the implicit parameter to the compiler:
 ALL_CFLAGS = -m64 -fexceptions -Wall $(CFLAGS) $(INCPATH)
 #Use CPPFLAGS for the preprocessor
@@ -87,18 +87,13 @@ ifneq (, $(findstring cfitsio, $(LINKERENV)))
         INCPATH += -I$(CFITSIO)/include
 	LIBS += -L$(CFITSIO)/lib -lcfitsio
 endif
+ifneq (, $(findstring root, $(LINKERENV)))
+    CXXFLAGS += -W -fPIC -D_REENTRANT $(shell root-config --cflags)
+    LIBS += $(shell root-config --glibs) -lMinuit
+endif
 ifneq (, $(findstring ctarta, $(LINKERENV)))
         INCPATH += -I$(CTARTA)/include
 	LIBS += -L$(CTARTA)/lib -lpacket -lRTAtelem
-endif
-ifneq (, $(findstring root, $(LINKERENV)))
-        ROOTCFLAGS   := $(shell root-config --cflags)
-	ROOTLIBS     := $(shell root-config --libs)
-	ROOTGLIBS    := $(shell root-config --glibs)
-	ROOTCONF=-O -pipe -Wall -W -fPIC -D_REENTRANT
-	INCPATH += -I$(ROOTSYS)/include/root
-	LIBS += $(ROOTGLIBS) -lMinuit
-	ALL_CFLAGS += $(ROOTCONF)
 endif
 ifneq (, $(findstring pil, $(LINKERENV)))
         INCPATH += -I$(AGILE)/include
