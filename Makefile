@@ -76,7 +76,7 @@ LIBS = -lstdc++
 #Insert the optional parameter to the compiler. The CFLAGS could be changed externally by the user
 CFLAGS   = -g -std=c++11
 #Insert the implicit parameter to the compiler:
-ALL_CFLAGS = -m64 -fexceptions -Wall $(CFLAGS) $(INCPATH)
+ALL_CFLAGS = -m64 -fexceptions -Wall -lm $(CFLAGS) $(INCPATH)
 #Use CPPFLAGS for the preprocessor
 CPPFLAGS =
 
@@ -105,7 +105,7 @@ ifneq (, $(findstring wcs, $(LINKERENV)))
 endif 
 ifneq (, $(findstring agile, $(LINKERENV)))
         INCPATH += -I$(AGILE)/include
-	LIBS += -L$(AGILE)/lib -lQLBase -lpacket -lagiletelem -lagilesci
+	LIBS += -L$(AGILE)/lib -lagiletelem -lpacket -lQLBase -lagilesci
 #-lagilecommon 
 endif
 

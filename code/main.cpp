@@ -112,35 +112,35 @@ int mainRAT() {
         exit(0);
     }
     string basedir = home;
-    
+
 	/// The Packet containing the FADC value of each triggered telescope
 	AGILETelem::RATPacket* rat = new AGILETelem::RATPacket(basedir + "/share/agiletelem/agile.stream", "/Users/bulgarelli/devel.agile/data_agiletelem/agilerat.raw", "");
 	///Read a telemetry packet from .raw file. Return 0 if end of file
 	ByteStreamPtr bs = rat->readPacket();
 	double lasttime = 0;
 	uint32_t counter = 0;
-	
+
 	while(bs != 0) { //if not end of file
 		counter++;
-		
-	
+
+
 		double time = rat->getTime();
 		if(lasttime < time)
 			lasttime = time;
 		else {
-			//cout << "error in time " << setprecision(15) << lasttime << " " << time << endl; 
+			//cout << "error in time " << setprecision(15) << lasttime << " " << time << endl;
 			bs = rat->readPacket();
 			continue;
 		}
 		//uint16_t val = rat->getM6283_0_AC_LAT4_1_RATEM();
 		//uint16_t val = rat->getM6320_0_PDHU_GRID_events_sent_to_ground();
 		//uint16_t val = rat->getM6271_0_AC_TOP2_RATEM();
-		
+
 		//cout << setprecision(15) << time << "\t" << val << endl;
 
 		bs = rat->readPacket();
-	
-	
+
+
 	}
 	//cout << counter << endl;
 }
@@ -148,7 +148,7 @@ int mainRAT() {
 int mainEVT() {
 	/// start clock
     clock_gettime( CLOCK_MONOTONIC, &startg);
-        
+
 	//EVTFilter f("agileevt.phearthL70.thetaG70.poin.raw");
 	EVTFilter f("/Users/bulgarelli/devel.agile/data_agiletelem/agilelog.10.poin.raw");
 	uint32_t index;
@@ -162,7 +162,7 @@ int mainEVT() {
 	for(int i=0; i<f.time.size(); i++) {
 		cout << setprecision(12) << f.time[i] << "\t" << setw(10) << setprecision(5) << f.ra[i] << "\t" << setw(10) << f.dec[i] << "\t" << f.energy[i] << "\t" << (int) f.evstatus[i] << "\t" << (int)f.ph_earth[i] << "\t" << (int) f.theta[i] << endl;
 	}
-	/*	
+	/*
 	double t3 = t1;
 	double t4 = t1;
 	for(int i=0; i<100; i++) {
@@ -183,9 +183,9 @@ int mainEVT() {
 	*/
 	/// stop the clock
     clock_gettime( CLOCK_MONOTONIC, &stopg);
-    double time = timediff(startg, stopg);
+    double time = difftime((time_t)startg.tv_sec, (time_t)stopg.tv_sec);
     std::cout << "Total time: " << time << std::endl << std::endl;
-	
+
 	return 0;
 }
 
@@ -199,14 +199,14 @@ int mainLOG() {
         exit(0);
     }
     string basedir = home;
-	
+
 	/// start clock
     //clock_gettime( CLOCK_MONOTONIC, &startg);
-        
+
 	LOGFilter f("/Users/bulgarelli/devel.agile/data_agiletelem/agilelog.10.spink.raw", 10);
 	uint32_t index;
 	//190599896.181275 190600896.181275
-	
+
 	bool ret = f.binary_search(257479896.181275, index, true);
 	cout << "index " << index << endl;
 	index = 74223319;
@@ -235,7 +235,7 @@ int mainLOG() {
 		bool ret = f.query(t3, t4, 18);
 		cout << "size " << f.time.size() << " capacity " << f.time.capacity() << endl;
 	}
-	
+
 //	cout << "size " << f.time.size() << " capacity " << f.time.capacity() << endl;
 //	bool ret = f.query(t1, t2, 18);
 //	cout << ret << endl;
@@ -243,16 +243,16 @@ int mainLOG() {
 //	//cout << t1 << " " << t2 << endl;
 //	cout << "size " << f.time.size() << " capacity " << f.time.capacity() << endl;
 //	//for(int i=0 ; i< f.time.size(); i++) cout << f.time[i] << endl;
-	
+
 	/// stop the clock
     clock_gettime( CLOCK_MONOTONIC, &stopg);
     double time = timediff(startg, stopg);
     std::cout << "Total time: " << time << std::endl << std::endl;
-	
+
 	return 0;
 	 */
-	
-    
+
+
 	/// The Packet containing the FADC value of each triggered telescope
 	AGILETelem::LOGPacket* rat = new AGILETelem::LOGPacket(basedir + "/share/agiletelem/agile.stream", "/Users/bulgarelli/devel.agile/data_agiletelem/agilelog.10.spink.raw", "");
 	///Read a telemetry packet from .raw file. Return 0 if end of file
@@ -260,11 +260,11 @@ int mainLOG() {
 	double lasttime = 0;
 	uint32_t counter = 0;
 	double lastval = 0;
-	
+
 	while(bs != 0) { //if not end of file
 		counter++;
-		
-		
+
+
 		double time = rat->getTime();
 		/*if(lasttime < time)
 			lasttime = time;
@@ -276,17 +276,17 @@ int mainLOG() {
 		//uint16_t val = rat->getM6283_0_AC_LAT4_1_RATEM();
 		//uint16_t val = rat->getM6320_0_PDHU_GRID_events_sent_to_ground();
 		//uint16_t val = rat->getM6271_0_AC_TOP2_RATEM();
-		
+
 		//double val = rat->getEarthTheta();
-		
-		
+
+
 		cout << counter << " " << setprecision(15) << time << endl;
-		
+
 		//lastval = val;
-		
+
 		bs = rat->readPacket();
-		
-		
+
+
 	}
 }
 
@@ -295,7 +295,7 @@ int mainR() {
 	cout << "reader" << endl;
 	try
 	{
-		
+
 		const char* home = getenv("AGILE");
 		if (!home)
 		{
@@ -303,30 +303,30 @@ int mainR() {
 			exit(0);
 		}
 		string basedir = home;
-		
+
 		int type;
 		type = EVT;
-		
+
 		if(type == EVT) {
 			/// The Packet containing the FADC value of each triggered telescope
 			AGILETelem::EVTPacket* evt = new AGILETelem::EVTPacket(basedir + "/share/agiletelem/agile.stream", "agileevt.baric.igrj17354-3255.poine.raw", "");
 			///Read a telemetry packet from .raw file. Return 0 if end of file
 			ByteStreamPtr bs = evt->readPacket();
-		
+
 			uint32_t counter = 0;
 			while(bs != 0) { //if not end of file
 				counter++;
 				//print the overall content of the packet
 				//evt->printPacket_input();
 
-			
+
 
 				//access the packet header information
-			
+
 				cout << "---------------------------------" << endl;
 				cout << "---- " << counter <<endl;
 				cout << "D: " << evt->getInputPacketDimension(bs) << endl;
-			
+
 				cout << "TIME: " << setprecision(20) << evt->getTime() << endl;
 				/*
 				cout << "(RA, DEC) = (" << setprecision(7) << evt->getRA() << ", " << evt->getDEC() << ") " << endl;
@@ -336,8 +336,8 @@ int mainR() {
 				*/
 				///Read a telemetry packet from .raw file
 				bs = evt->readPacket();
-			
-			
+
+
 			}
 			cout << counter << endl;
 		}
@@ -346,7 +346,7 @@ int mainR() {
 			AGILETelem::LOGPacket* log = new AGILETelem::LOGPacket(basedir + "/share/agiletelem/agile.stream", "agilelog.10.spink.raw", "");
 			///Read a telemetry packet from .raw file. Return 0 if end of file
 			ByteStreamPtr bs = log->readPacket();
-		
+
 			uint32_t counter = 0;
 			double lasttime = 0;
 			while(bs != 0) { //if not end of file
@@ -358,7 +358,7 @@ int mainR() {
 				cout << "---------------------------------" << endl;
 				cout << "---- " << counter <<endl;
 				cout << "D: " << log->getInputPacketDimension(bs) << endl;
-			
+
 				cout << "TIME: " << setprecision(20) << log->getTime() << endl;
 				cout << "PHASE: " <<  (int)log->getPhase() << endl;
 				cout << "LIVETIME: " << setprecision(7) << log->getLivetime() << endl;
@@ -371,7 +371,7 @@ int mainR() {
 				cout << "---- " << counter <<endl;
 				*/
 				double time = log->getTime();
-				
+
 				if(time > 267489283) {
 					cerr << "out of time " << setprecision(20)  << time << endl;
 					continue;
@@ -383,8 +383,8 @@ int mainR() {
 				lasttime = time;
 				///Read a telemetry packet from .raw file
 				bs = log->readPacket();
-			
-			
+
+
 			}
 			cout << counter << endl;
 		}
@@ -398,7 +398,7 @@ int mainR() {
 	{
 		cout << e->geterror() << endl;
 	}
-	
+
 }
 
 ///Import AGILE RAT LOG and EVT files into Ice/Freeze/BDB
@@ -406,13 +406,13 @@ int mainR() {
 int mainW(string filename, int nrows_end) {
 
 	cout << "gtImporterELpacket" << endl;
-	
+
 	/*if(argc == 1) {
 		cerr << "Please, provide (1) the fits file to import (2 optional) the last line to be read" << endl;
 		return 0;
 	}
 	*/
-	
+
 	const char* home = getenv("AGILE");
     if (!home)
     {
@@ -421,7 +421,7 @@ int mainW(string filename, int nrows_end) {
     }
     string basedir = home;
 
-	
+
 	InputFileFITS* inputFF;
 
 
@@ -443,16 +443,16 @@ int mainW(string filename, int nrows_end) {
 		if(ncols == 19) type = EVT;
 		if(ncols == 41) type = LOG;
 		if(ncols == 897) type = RAT;
-		
+
 
 		if(type == EVT) {
 			try
     		{
 				/// The Packet containing the FADC value of each triggered telescope
         		AGILETelem::EVTPacket* evt = new AGILETelem::EVTPacket(basedir + "/share/agiletelem/agile.stream", "", "agileevt.xxxx.raw");
-        	
-        			
-			
+
+
+
 				//read all columns
 				cout << "Read EVT file " << endl;
 				std::vector<double> time = inputFF->read64f(EVT_TIME, nrows_start, nrows_end-1);
@@ -478,9 +478,9 @@ int mainW(string filename, int nrows_end) {
 				//write data into file
 				uint32_t saved = 0;
 				for(uint32_t i  = 0; i<nrows_end; i++) {
-				
+
 					//prefiltering
-					if( myisnan((double)ra[i]) || myisnan((double)dec[i]) || myisnan((double)energy[i]) || myisnan((double)ph_earth[i]) || myisnan((double)theta[i]) || myisnan((double)phase[i]) ) { //|| myisnan((double)phi[i])  
+					if( myisnan((double)ra[i]) || myisnan((double)dec[i]) || myisnan((double)energy[i]) || myisnan((double)ph_earth[i]) || myisnan((double)theta[i]) || myisnan((double)phase[i]) ) { //|| myisnan((double)phi[i])
                     	cout << i << " nan" << endl;
                         continue;
                     }
@@ -504,7 +504,7 @@ int mainW(string filename, int nrows_end) {
 					evt->setEnergy((word)energy[i]);
 					evt->setPh_Earth((word)ph_earth[i]);
 					evt->setTheta(theta[i]);
-					
+
 					evt->writePacket();
 					saved++;
 					//evt->printPacket_output();
@@ -527,10 +527,10 @@ int mainW(string filename, int nrows_end) {
     		{
 				/// timeStep parameter
 				uint32_t timeStep = 10;
-				
+
 				ostringstream outfilename;
 				outfilename << "agilelog." << timeStep << ".xxxx.raw";
-				
+
         		AGILETelem::LOGPacket* log = new AGILETelem::LOGPacket(basedir + "/share/agiletelem/agile.stream", "", outfilename.str());
 
 				//read all columns
@@ -554,15 +554,15 @@ int mainW(string filename, int nrows_end) {
 				uint32_t saved = 0;
 				//write data into file
 				for(uint32_t i  = 0; i<nrows_end; i++) {
-					
+
 					//prefiltering IMPORTANTE
 					//str << " && LIVETIME > 0 && LOG_STATUS == 0 && MODE == 2";
 					bool save = false;
-					if(livetime[i] > 0 && log_status[i] == 0 && mode[i] == 2 && (i+1) == (((i+1)/timeStep) * timeStep)) 
+					if(livetime[i] > 0 && log_status[i] == 0 && mode[i] == 2 && (i+1) == (((i+1)/timeStep) * timeStep))
 						save = true;
-					else 
+					else
 						continue;
-						
+
 					if( myisnan((double)livetime[i]) || myisnan((double)attitude_ra_y[i]) || myisnan((double)attitude_dec_y[i]) || myisnan((double)log_earth_ra[i]) || myisnan((double)log_earth_dec[i]) || myisnan((double)phase[i]) || myisnan((double) log_earth_theta[i]) || myisnan((double) log_earth_phi[i]) )   {//|| myisnan((double)phi[i])
                     	cout << i << " nan" << endl;
                         continue;
@@ -588,9 +588,9 @@ int mainW(string filename, int nrows_end) {
 						log->setEarthPhi(log_earth_phi[i]);
 						log->writePacket();
 						saved++;
-					
+
 						cout << "------------------- " << i << " " << setprecision(15) << time[i] <<  endl;
-						
+
 						//log->printPacket_output();
 					}
 				}
@@ -609,7 +609,7 @@ int mainW(string filename, int nrows_end) {
 		if(type == RAT) {
 			try
     		{
-				
+
 				ostringstream outfilename;
 				outfilename << "agilerat.raw";
         		AGILETelem::RATPacket* rat = new AGILETelem::RATPacket(basedir + "/share/agiletelem/agile.stream", "", outfilename.str());
@@ -617,9 +617,9 @@ int mainW(string filename, int nrows_end) {
 				//read all columns
 				cout << "Read RAT file " << nrows_end << endl;
 				std::vector<double> time = inputFF->read64f(RAT_TIME, nrows_start, nrows_end-1);
-				
+
 				std::vector<uint16_t> M6271_0_AC_TOP1_RATEM = inputFF->read16u(RAT_M6271_0_AC_TOP1_RATEM, nrows_start, nrows_end-1);
-				
+
 				std::vector<uint16_t> M6272_0_AC_TOP2_RATEM= inputFF->read16u(RAT_M6272_0_AC_TOP2_RATEM, nrows_start, nrows_end-1);
 				std::vector<uint16_t> M6273_0_AC_TOP3_RATEM= inputFF->read16u(RAT_M6273_0_AC_TOP3_RATEM, nrows_start, nrows_end-1);
 				std::vector<uint16_t> M6274_0_AC_LAT1_1_RATEM= inputFF->read16u(RAT_M6274_0_AC_LAT1_1_RATEM, nrows_start, nrows_end-1);
@@ -638,18 +638,18 @@ int mainW(string filename, int nrows_end) {
 				std::vector<uint16_t> M6320_0_PDHU_GRID_events_sent_to_ground= inputFF->read16u(RAT_M6320_0_PDHU_GRID_events_sent_to_ground, nrows_start, nrows_end-1);
 				std::vector<uint16_t> M6573_0_MCAL_Fixed_Rt_BoardX= inputFF->read16u(RAT_M6573_0_MCAL_Fixed_Rt_BoardX, nrows_start, nrows_end-1);
 				std::vector<uint16_t> M6575_0_MCAL_Fixed_Rt_BoardZ= inputFF->read16u(RAT_M6575_0_MCAL_Fixed_Rt_BoardZ, nrows_start, nrows_end-1);
-				
+
 				uint32_t saved = 0;
 				//write data into file
 				for(uint32_t i  = 0; i<nrows_end; i++) {
-					
+
 					bool save = true;
-					
+
 					//setting if good
 					if(save) {
 						rat->setTime(time[i]);
 						rat->setM6271_0_AC_TOP1_RATEM((uint16_t) M6271_0_AC_TOP1_RATEM[i]);
-						
+
 						rat->setM6272_0_AC_TOP2_RATEM((uint16_t) M6272_0_AC_TOP2_RATEM[i]);
 						rat->setM6273_0_AC_TOP3_RATEM((uint16_t) M6273_0_AC_TOP3_RATEM[i]);
 						rat->setM6274_0_AC_LAT1_1_RATEM((uint16_t) M6274_0_AC_LAT1_1_RATEM[i]);
@@ -668,12 +668,12 @@ int mainW(string filename, int nrows_end) {
 						rat->setM6320_0_PDHU_GRID_events_sent_to_ground((uint16_t) M6320_0_PDHU_GRID_events_sent_to_ground[i]);
 						rat->setM6573_0_MCAL_Fixed_Rt_BoardX((uint16_t) M6573_0_MCAL_Fixed_Rt_BoardX[i]);
 						rat->setM6575_0_MCAL_Fixed_Rt_BoardZ((uint16_t) M6575_0_MCAL_Fixed_Rt_BoardZ[i]);
-						
+
 						rat->writePacket();
 						saved++;
-					
+
 						//cout << "------------------- " << i << " " << setprecision(15) << time[i] << " " << (uint16_t) M6271_0_AC_TOP1_RATEM[i]<< " " << M6320_0_PDHU_GRID_events_sent_to_ground[i] << " " << M6283_0_AC_LAT4_1_RATEM[i] << endl;
-						
+
 						//log->printPacket_output();
 					}
 				}
@@ -689,8 +689,8 @@ int mainW(string filename, int nrows_end) {
 				cout << e->geterror() << endl;
 			}
 		}
-			
-		
+
+
 	} catch(IOException* e) {
 		cout << e->getErrorCode() << ": " << e->what() << endl;
 		return e->getErrorCode();
