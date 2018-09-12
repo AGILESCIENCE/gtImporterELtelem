@@ -417,12 +417,12 @@ int mainW(string filename, int nrows_end) {
 	*/
 
 	const char* home = getenv("AGILE");
-    if (!home)
-    {
+  if (!home)
+  {
     	std::cerr << "AGILE environment variable is not defined." << std::endl;
         exit(0);
-    }
-    string basedir = home;
+  }
+  string basedir = home;
 
 
 	InputFileFITS* inputFF;
@@ -567,9 +567,10 @@ int mainW(string filename, int nrows_end) {
 					bool save = false;
 					if(livetime[i] > 0 && log_status[i] == 0 && mode[i] == 2 && phase[i] != 1 && phase[i] != 2) // && (i+1) == (((i+1)/timeStep) * timeStep))
 						save = true;
-					else
+					else {
+            cout << i << " " << livetime[i] << " " << log_status[i] << " " << mode[i] << " " << phase[i]  << endl;
 						continue;
-
+          }
 					if( myisnan((double)livetime[i]) || myisnan((double)attitude_ra_y[i]) || myisnan((double)attitude_dec_y[i]) || myisnan((double)log_earth_ra[i]) || myisnan((double)log_earth_dec[i]) || myisnan((double)phase[i]) || myisnan((double) log_earth_theta[i]) || myisnan((double) log_earth_phi[i]) )   {//|| myisnan((double)phi[i])
             cout << i << " nan" << endl;
             continue;
@@ -616,8 +617,7 @@ int mainW(string filename, int nrows_end) {
 			}
 		}
 		if(type == RAT) {
-			try
-    		{
+			try {
 
 				ostringstream outfilename;
 				outfilename << "agilerat.raw";
@@ -688,9 +688,7 @@ int mainW(string filename, int nrows_end) {
 				}
 				cout << "RAT saved " << saved << endl;
 
-			}
-			catch(PacketExceptionIO* e)
-			{
+			} catch(PacketExceptionIO* e) {
 				cout << e->geterror() << endl;;
 			}
 			catch(PacketException* e)
@@ -698,7 +696,7 @@ int mainW(string filename, int nrows_end) {
 				cout << e->geterror() << endl;
 			}
 		}
-
+    return;
 
 	} catch(IOException* e) {
 		cout << e->getErrorCode() << ": " << e->what() << endl;
