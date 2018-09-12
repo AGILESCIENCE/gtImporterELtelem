@@ -696,7 +696,7 @@ int mainW(string filename, int nrows_end) {
 				cout << e->geterror() << endl;
 			}
 		}
-    return;
+    return 0;
 
 	} catch(IOException* e) {
 		cout << e->getErrorCode() << ": " << e->what() << endl;
