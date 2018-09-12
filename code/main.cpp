@@ -41,7 +41,7 @@
 
 //columns of EVT file
 //0 for TIME, 18 for TIMEBAR
-#define EVT_TIME 18
+#define EVT_TIME 0
 #define EVT_PHI 2
 #define EVT_RA 3
 #define EVT_DEC 4
@@ -147,7 +147,7 @@ int mainRAT() {
 
 int mainEVT() {
 	/// start clock
-    clock_gettime( CLOCK_MONOTONIC, &startg);
+    //clock_gettime( CLOCK_MONOTONIC, &startg);
 
 	//EVTFilter f("agileevt.phearthL70.thetaG70.poin.raw");
 	EVTFilter f("/Users/bulgarelli/devel.agile/data_agiletelem/agilelog.10.poin.raw");
@@ -182,9 +182,9 @@ int mainEVT() {
 	//for(int i=0 ; i< f.time.size(); i++) cout << f.time[i] << endl;
 	*/
 	/// stop the clock
-    clock_gettime( CLOCK_MONOTONIC, &stopg);
-    double time = difftime((time_t)startg.tv_sec, (time_t)stopg.tv_sec);
-    std::cout << "Total time: " << time << std::endl << std::endl;
+    //clock_gettime( CLOCK_MONOTONIC, &stopg);
+    //double time = difftime((time_t)startg.tv_sec, (time_t)stopg.tv_sec);
+    //std::cout << "Total time: " << time << std::endl << std::endl;
 
 	return 0;
 }
@@ -253,7 +253,7 @@ int mainLOG() {
 	 */
 
 
-	/// The Packet containing the FADC value of each triggered telescope
+
 	AGILETelem::LOGPacket* rat = new AGILETelem::LOGPacket(basedir + "/share/agiletelem/agile.stream", "/Users/bulgarelli/devel.agile/data_agiletelem/agilelog.10.spink.raw", "");
 	///Read a telemetry packet from .raw file. Return 0 if end of file
 	ByteStreamPtr bs = rat->readPacket();
@@ -449,13 +449,13 @@ int mainW(string filename, int nrows_end) {
 			try
     		{
 				/// The Packet containing the FADC value of each triggered telescope
-        		AGILETelem::EVTPacket* evt = new AGILETelem::EVTPacket(basedir + "/share/agiletelem/agile.stream", "", "agileevt.xxxx.raw");
+        AGILETelem::EVTPacket* evt = new AGILETelem::EVTPacket(basedir + "/share/agiletelem/agile.stream", "", "agileevt.xxxx.raw");
 
 
 
 				//read all columns
 				cout << "Read EVT file " << endl;
-				std::vector<double> time = inputFF->read64f(EVT_TIME, nrows_start, nrows_end-1);
+				std::vector<double> time2 = inputFF->read64f(EVT_TIME, nrows_start, nrows_end-1);
 				//std::vector<float> phi = inputFF->read32f(EVT_PHI, nrows_start, nrows_end-1);
 				std::vector<float> ra = inputFF->read32f(EVT_RA, nrows_start, nrows_end-1);
 				std::vector<float> dec = inputFF->read32f(EVT_DEC, nrows_start, nrows_end-1);
@@ -478,25 +478,27 @@ int mainW(string filename, int nrows_end) {
 				//write data into file
 				uint32_t saved = 0;
 				for(uint32_t i  = 0; i<nrows_end; i++) {
-
+          //cout << "I " << time2[i] << " " << theta[i] << " " << ph_earth[i] << " " << ra[i] << endl;
 					//prefiltering
 					if( myisnan((double)ra[i]) || myisnan((double)dec[i]) || myisnan((double)energy[i]) || myisnan((double)ph_earth[i]) || myisnan((double)theta[i]) || myisnan((double)phase[i]) ) { //|| myisnan((double)phi[i])
                     	cout << i << " nan" << endl;
                         continue;
-                    }
-                    //prefiltering2 -  rimuovere tutti quelli con ph_earth[i] < 70 e con theta[i] > 70
-                    if(ph_earth[i] < 70) {
+          }
+          //prefiltering2 -  rimuovere tutti quelli con ph_earth[i] < 70 e con theta[i] > 70
+          if(ph_earth[i] < 70) {
                     	cout <<  " ph_earth["<<i<<"] < 70" << endl;
                     	continue;
-                    }
+          }
 					if(theta[i] > 70) {
                     	cout << " theta["<<i<<"] > 70" << endl;
                     	continue;
-                    }
-					if(time[i] == 0)
+          }
+					if(time2[i] == 0) {
+            cout << "time is 0" << endl;
 						continue;
-                    cout << setprecision(15) << time[i] << endl;
-					evt->setTime(time[i]);
+          }
+          cout << setprecision(15) << time2[i] << endl;
+					evt->setTime(time2[i]);
 					evt->setRA(ra[i]);
 					evt->setDEC(dec[i]);
 					evt->setEvstatus(status2[i]);
