@@ -429,7 +429,7 @@ int mainW(string filename, int nrows_end) {
 
 
 	//open input file FITS
-	try{
+	//try{
 		inputFF = new InputFileFITS();
 		inputFF->open(filename);
 		inputFF->moveToHeader(1); //CHECK base index AZ
@@ -528,8 +528,7 @@ int mainW(string filename, int nrows_end) {
 
 		}
 		if(type == LOG) {
-			try
-    		{
+		//	try {
 				/// timeStep parameter
 				uint32_t timeStep = 10;
 
@@ -605,16 +604,15 @@ int mainW(string filename, int nrows_end) {
 					}
 				}
 				cout << "LOG saved " << saved << endl;
-
-			}
-			catch(PacketExceptionIO* e)
+      /*
+			} catch(PacketExceptionIO* e)
 			{
 				cout << e->geterror() << endl;;
 			}
 			catch(PacketException* e)
 			{
 				cout << e->geterror() << endl;
-			}
+			}*/
 		}
 		if(type == RAT) {
 			try {
@@ -698,10 +696,10 @@ int mainW(string filename, int nrows_end) {
 		}
     return;
 
-	} catch(IOException* e) {
+	/*} catch(IOException* e) {
 		cout << e->getErrorCode() << ": " << e->what() << endl;
 		return e->getErrorCode();
-	}
+	}*/
 }
 
 int main(int argc, char** argv) {
