@@ -533,7 +533,7 @@ int mainW(string filename, int nrows_end) {
 				ostringstream outfilename;
 				outfilename << "agilelog." << timeStep << ".xxxx.raw";
 
-        		AGILETelem::LOGPacket* log = new AGILETelem::LOGPacket(basedir + "/share/agiletelem/agile.stream", "", outfilename.str());
+        AGILETelem::LOGPacket* log = new AGILETelem::LOGPacket(basedir + "/share/agiletelem/agile.stream", "", outfilename.str());
 
 				//read all columns
 				cout << "Read LOG file " << nrows_end << endl;
@@ -555,24 +555,26 @@ int mainW(string filename, int nrows_end) {
 
 				uint32_t saved = 0;
 				//write data into file
-				for(uint32_t i  = 0; i<nrows_end; i++) {
+				for(uint32_t i  = 0; i<nrows_end; i+=timeStep) {
 
 					//prefiltering IMPORTANTE
 					//str << " && LIVETIME > 0 && LOG_STATUS == 0 && MODE == 2";
 					bool save = false;
-					if(livetime[i] > 0 && log_status[i] == 0 && mode[i] == 2 && (i+1) == (((i+1)/timeStep) * timeStep))
+					if(livetime[i] > 0 && log_status[i] == 0 && mode[i] == 2) // && (i+1) == (((i+1)/timeStep) * timeStep))
 						save = true;
 					else
 						continue;
 
 					if( myisnan((double)livetime[i]) || myisnan((double)attitude_ra_y[i]) || myisnan((double)attitude_dec_y[i]) || myisnan((double)log_earth_ra[i]) || myisnan((double)log_earth_dec[i]) || myisnan((double)phase[i]) || myisnan((double) log_earth_theta[i]) || myisnan((double) log_earth_phi[i]) )   {//|| myisnan((double)phi[i])
-                    	cout << i << " nan" << endl;
-                        continue;
-                    }
-					if(time[i] > 267489283) {
+            cout << i << " nan" << endl;
+            continue;
+          }
+          /*
+          if(time[i] > 267489283) {
 						cerr << "out of time " << time[i] << endl;
 						continue;
 					}
+          */
 					if(time[i-1]>=time[i]) {
 						cerr << "time out of order" << endl;
 						continue;
