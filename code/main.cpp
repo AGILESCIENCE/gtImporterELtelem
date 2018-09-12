@@ -582,7 +582,7 @@ int mainW(string filename, int nrows_end) {
 						continue;
 					}
           */
-					if(time[i-1]>=time[i]) {
+					if(i>0 && time[i-1]>=time[i]) {
 						cerr << "time out of order" << endl;
 						continue;
 					}
