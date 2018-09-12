@@ -568,7 +568,7 @@ int mainW(string filename, int nrows_end) {
 					if(livetime[i] > 0 && log_status[i] == 0 && mode[i] == 2 && phase[i] != 1 && phase[i] != 2) // && (i+1) == (((i+1)/timeStep) * timeStep))
 						save = true;
 					else {
-            cout << i << " " << livetime[i] << " " << log_status[i] << " " << mode[i] << " " << phase[i]  << endl;
+            //cout << i << " " << livetime[i] << " " << log_status[i] << " " << mode[i] << " " << phase[i]  << endl;
 						continue;
           }
 					if( myisnan((double)livetime[i]) || myisnan((double)attitude_ra_y[i]) || myisnan((double)attitude_dec_y[i]) || myisnan((double)log_earth_ra[i]) || myisnan((double)log_earth_dec[i]) || myisnan((double)phase[i]) || myisnan((double) log_earth_theta[i]) || myisnan((double) log_earth_phi[i]) )   {//|| myisnan((double)phi[i])
