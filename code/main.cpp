@@ -190,7 +190,7 @@ int mainEVT() {
 }
 
 
-int mainLOG() {
+int mainLOG(string filename) {
 	cout << "mainLOG" << endl;
 	const char* home = getenv("AGILE");
     if (!home)
@@ -203,10 +203,11 @@ int mainLOG() {
 	/// start clock
     //clock_gettime( CLOCK_MONOTONIC, &startg);
 
-	LOGFilter f("/Users/bulgarelli/devel.agile/data_agiletelem/agilelog.10.spink.raw", 10);
+	//LOGFilter f("/Users/bulgarelli/devel.agile/data_agiletelem/agilelog.10.spink.raw", 10);
+	LOGFilter f(filename, 10);
 	uint32_t index;
 	//190599896.181275 190600896.181275
-
+	/*
 	bool ret = f.binary_search(257479896.181275, index, true);
 	cout << "index " << index << endl;
 	index = 74223319;
@@ -216,6 +217,7 @@ int mainLOG() {
 	uint32_t mid = f.midpoint(index, 74223334);
 	cout << "mid " << mid << endl;
 	return 0;
+	*/
 	//if(ret == false) {
 	//	cout << "index not found" << endl;
 	//	return -1;
@@ -254,7 +256,8 @@ int mainLOG() {
 
 
 
-	AGILETelem::LOGPacket* rat = new AGILETelem::LOGPacket(basedir + "/share/agiletelem/agile.stream", "/Users/bulgarelli/devel.agile/data_agiletelem/agilelog.10.spink.raw", "");
+	//AGILETelem::LOGPacket* rat = new AGILETelem::LOGPacket(basedir + "/share/agiletelem/agile.stream", "/Users/bulgarelli/devel.agile/data_agiletelem/agilelog.10.spink.raw", "");
+	AGILETelem::LOGPacket* rat = new AGILETelem::LOGPacket(basedir + "/share/agiletelem/agile.stream", filename, "");
 	///Read a telemetry packet from .raw file. Return 0 if end of file
 	ByteStreamPtr bs = rat->readPacket();
 	double lasttime = 0;
@@ -497,7 +500,7 @@ int mainW(string filename, int nrows_end) {
             cout << "time is 0" << endl;
 						continue;
           }
-          cout << setprecision(15) << time2[i] << endl;
+          //cout << setprecision(15) << time2[i] << endl;
 					evt->setTime(time2[i]);
 					evt->setRA(ra[i]);
 					evt->setDEC(dec[i]);
@@ -715,8 +718,10 @@ int main(int argc, char** argv) {
 	}
 	if(op == 1)
 		mainR();
-	if(op == 2)
-		mainLOG();
+	if(op == 2) {
+		string filename = argv[2];
+		mainLOG(filename);
+	}
 	if(op == 3)
 		mainEVT();
 	///read ratemeters and generate a text file (stdout) with time and a column with the ratemeter
