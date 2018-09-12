@@ -557,8 +557,10 @@ int mainW(string filename, int nrows_end) {
 
 				uint32_t saved = 0;
 				//write data into file
-				for(uint32_t i  = 0; i<nrows_end; i+=timeStep) {
+				for(uint32_t i = 0; i<nrows_end; i+=timeStep) {
 
+          if(i >= nrows_end)
+            continue;
 					//prefiltering IMPORTANTE
 					//str << " && LIVETIME > 0 && LOG_STATUS == 0 && MODE == 2";
           //TIME >= 191808000.000000 && TIME < 197856000.000000 &&
