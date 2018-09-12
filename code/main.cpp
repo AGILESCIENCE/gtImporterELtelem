@@ -600,7 +600,7 @@ int mainW(string filename, int nrows_end) {
 						log->writePacket();
 						saved++;
 
-						cout << "------------------- " << i << " " << setprecision(15) << time[i] <<  endl;
+						cout << "------------------- " << i << " " << fixed << setprecision(15) << time[i] <<  endl;
 
 						//log->printPacket_output();
 					}
