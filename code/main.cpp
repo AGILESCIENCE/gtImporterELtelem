@@ -565,7 +565,7 @@ int mainW(string filename, int nrows_end) {
           //TIME >= 191808000.000000 && TIME < 197856000.000000 &&
           //LIVETIME > 0 && LOG_STATUS == 0 && MODE == 2 && PHASE .NE. 1 && PHASE .NE. 2 && ((#ROW == 1) || (#ROW == (#ROW/10) *10))
 					bool save = false;
-					if(livetime[i] > 0 && log_status[i] == 0 && mode[i] == 2 && phase != 1 && phase != 2) // && (i+1) == (((i+1)/timeStep) * timeStep))
+					if(livetime[i] > 0 && log_status[i] == 0 && mode[i] == 2 && phase[i] != 1 && phase[i] != 2) // && (i+1) == (((i+1)/timeStep) * timeStep))
 						save = true;
 					else
 						continue;
