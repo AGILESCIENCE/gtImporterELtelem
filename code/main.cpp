@@ -308,7 +308,7 @@ int mainR() {
 		string basedir = home;
 
 		int type;
-		type = EVT;
+		type = LOG;
 
 		if(type == EVT) {
 			/// The Packet containing the FADC value of each triggered telescope
@@ -346,7 +346,7 @@ int mainR() {
 		}
 		if(type == LOG) {
 			/// The Packet containing the FADC value of each triggered telescope
-			AGILETelem::LOGPacket* log = new AGILETelem::LOGPacket(basedir + "/share/agiletelem/agile.stream", "agilelog.10.spink.raw", "");
+			AGILETelem::LOGPacket* log = new AGILETelem::LOGPacket(basedir + "/share/agiletelem/agile.stream", "agilelog.10.xxxx.raw", "");
 			///Read a telemetry packet from .raw file. Return 0 if end of file
 			ByteStreamPtr bs = log->readPacket();
 
@@ -356,36 +356,37 @@ int mainR() {
 				counter++;
 				//print the overall content of the packet
 				//evt->printPacket_input();
+        double time = log->getTime();
+        if(time > 191808000) {
+            cout << "---------------------------------" << endl;
+            cout << "---- " << counter <<endl;
+            cout << "D: " << log->getInputPacketDimension(bs) << endl;
 
-				/*
-				cout << "---------------------------------" << endl;
-				cout << "---- " << counter <<endl;
-				cout << "D: " << log->getInputPacketDimension(bs) << endl;
+            cout << "TIME: " << setprecision(20) << log->getTime() << endl;
+            cout << "PHASE: " <<  (int)log->getPhase() << endl;
+            cout << "LIVETIME: " << setprecision(7) << log->getLivetime() << endl;
+            cout << "ATTITUDE_RA_Y: " << log->getAttitudeRaY() << endl;
+            cout << "ATTITUDE_DEC_Y: " << log->getAttitudeDecY() << endl;
+            cout << "EARTH_RA: " << setprecision(7) << log->getEarthRa() << endl;
+            cout << "EARTH_DEC: " << setprecision(7) << log->getEarthDec() << endl;
+            cout << "EARTH_THETA: " << setprecision(7) << log->getEarthTheta() << endl;
+            cout << "EARTH_PHI: " << setprecision(7) << log->getEarthPhi() << endl;
+            cout << "---- " << counter <<endl;
+        }
 
-				cout << "TIME: " << setprecision(20) << log->getTime() << endl;
-				cout << "PHASE: " <<  (int)log->getPhase() << endl;
-				cout << "LIVETIME: " << setprecision(7) << log->getLivetime() << endl;
-				cout << "ATTITUDE_RA_Y: " << log->getAttitudeRaY() << endl;
-				cout << "ATTITUDE_DEC_Y: " << log->getAttitudeDecY() << endl;
-				cout << "EARTH_RA: " << setprecision(7) << log->getEarthRa() << endl;
-				cout << "EARTH_DEC: " << setprecision(7) << log->getEarthDec() << endl;
-				cout << "EARTH_THETA: " << setprecision(7) << log->getEarthTheta() << endl;
-				cout << "EARTH_PHI: " << setprecision(7) << log->getEarthPhi() << endl;
-				cout << "---- " << counter <<endl;
-				*/
-				double time = log->getTime();
-
-				if(time > 267489283) {
-					cerr << "out of time " << setprecision(20)  << time << endl;
-					continue;
-				}
-				if(lasttime>=time) {
-					cerr << "time out of order" << setprecision(20)  << time << endl;
-					continue;
-				}
-				lasttime = time;
-				///Read a telemetry packet from .raw file
-				bs = log->readPacket();
+        /*
+  			if(time > 191808000) {
+  					cerr << "out of time " << setprecision(20)  << time << endl;
+  					continue;
+  			}
+        */
+  			if(lasttime>=time) {
+  				cerr << "time out of order" << setprecision(20)  << time << endl;
+  				continue;
+  			}
+  			lasttime = time;
+  			///Read a telemetry packet from .raw file
+  			bs = log->readPacket();
 
 
 			}
