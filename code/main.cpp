@@ -150,7 +150,7 @@ int mainEVT() {
     //clock_gettime( CLOCK_MONOTONIC, &startg);
 
 	//EVTFilter f("agileevt.phearthL70.thetaG70.poin.raw");
-	EVTFilter f("/Users/bulgarelli/devel.agile/data_agiletelem/agilelog.10.poin.raw");
+	EVTFilter f("/Users/bulgarelli/devel.agile/data_agiletelem/agilelog.1.poin.raw");
 	uint32_t index;
 	bool ret;
 	double t1, t2;
@@ -346,7 +346,7 @@ int mainR() {
 		}
 		if(type == LOG) {
 			/// The Packet containing the FADC value of each triggered telescope
-			AGILETelem::LOGPacket* log = new AGILETelem::LOGPacket(basedir + "/share/agiletelem/agile.stream", "agilelog.10.xxxx.raw", "");
+			AGILETelem::LOGPacket* log = new AGILETelem::LOGPacket(basedir + "/share/agiletelem/agile.stream", "agilelog.1.xxxx.raw", "");
 			///Read a telemetry packet from .raw file. Return 0 if end of file
 			ByteStreamPtr bs = log->readPacket();
 
@@ -531,7 +531,7 @@ int mainW(string filename, int nrows_end) {
 		if(type == LOG) {
 		//	try {
 				/// timeStep parameter
-				uint32_t timeStep = 10;
+				uint32_t timeStep = 1;
 
 				ostringstream outfilename;
 				outfilename << "agilelog." << timeStep << ".xxxx.raw";
